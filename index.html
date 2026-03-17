@@ -163,7 +163,7 @@ async function mq(query){
   return j.data;
 }
 
-const SKIP=new Set(['name','pulse-id','item-id','auto-number','subtasks','board-relation','dependency','color']);
+const SKIP=new Set(['name','pulse-id','item-id','auto-number','subtasks','board-relation','dependency','color','mirror','formula']);
 
 async function fetchAllItems(boardId,cols,limit){
   const PAGE=500;
@@ -192,7 +192,7 @@ async function runAll(){
 
   try {
     const [bd,ud]=await Promise.all([
-      mq(`{boards(limit:100,order_by:created_at,board_kind:public){id name state items_count updated_at workspace{id name} columns{id title type} groups{id title} subscribers{id name}}}`),
+      mq(`{boards(limit:100,order_by:created_at,board_kind:public){id name state board_kind items_count updated_at workspace{id name} columns{id title type} groups{id title} subscribers{id name}}}`),
       mq(`{users(limit:200){id name email is_admin is_guest is_pending created_at enabled}}`)
     ]);
     const rawBoards=bd.boards||[];
@@ -259,6 +259,7 @@ async function runAll(){
       name:b.name,workspace:b.workspace?.name||'—',items:b.items_count||0,
       updated_at:b.updated_at,days_stale:daysSince(b.updated_at),last_activity:ago(b.updated_at),
       subscribers:(b.subscribers||[]).length,state:b.state,
+      kind:b.board_kind||'board',
       rec:b.items_count===0?'empty':daysSince(b.updated_at)>=staleDays?'stale':'ok'
     }));
     S.columns=colResults;S.groups=grpResults;S.integrations=intResults;
@@ -348,24 +349,41 @@ function tBoards(){
   if(f==='empty')rows=rows.filter(r=>r.rec==='empty');
   else if(f==='stale')rows=rows.filter(r=>r.rec==='stale');
   else if(f==='ok')rows=rows.filter(r=>r.rec==='ok');
+  else if(f==='workflow')rows=rows.filter(r=>r.kind==='workflows');
   rows=sortRows('boards',S.sortCol['boards']||'days_stale',rows);
-  const badge=r=>r.rec==='empty'?'<span class="badge badge-red"><span class="dot dot-red"></span>Empty</span>'
+  const kindBadge=r=>{
+    if(r.kind==='workflows')return'<span class="badge badge-blue">Workflow</span>';
+    if(r.kind==='sub_items_board')return'<span class="badge badge-gray">Subitems</span>';
+    return'<span class="badge badge-gray">Board</span>';
+  };
+  const recBadge=r=>r.rec==='empty'?'<span class="badge badge-red"><span class="dot dot-red"></span>Empty</span>'
     :r.rec==='stale'?`<span class="badge badge-amber"><span class="dot dot-amber"></span>Stale</span>`
     :'<span class="badge badge-green"><span class="dot dot-green"></span>Active</span>';
-  const body=rows.length?rows.map(r=>`<tr><td title="${esc(r.name)}">${esc(r.name)}</td><td>${esc(r.workspace)}</td><td>${r.items.toLocaleString()}</td><td>${r.subscribers}</td><td>${r.last_activity}</td><td>${badge(r)}</td></tr>`).join('')
-    :`<tr class="empty-row"><td colspan="6">No boards match this filter.</td></tr>`;
-  return `<div class="note"><strong>Stale</strong> = not updated in ${staleDays}+ days. <strong>Empty</strong> = 0 items.</div>
+  const body=rows.length?rows.map(r=>`<tr>
+    <td title="${esc(r.name)}">${esc(r.name)}</td>
+    <td>${esc(r.workspace)}</td>
+    <td>${kindBadge(r)}</td>
+    <td>${r.items.toLocaleString()}</td>
+    <td>${r.subscribers}</td>
+    <td>${r.last_activity}</td>
+    <td>${recBadge(r)}</td>
+  </tr>`).join('')
+    :`<tr class="empty-row"><td colspan="7">No boards match this filter.</td></tr>`;
+  const wfCount=S.boards.filter(r=>r.kind==='workflows').length;
+  return `<div class="note"><strong>Stale</strong> = not updated in ${staleDays}+ days. <strong>Empty</strong> = 0 items. <strong>Workflow</strong> = monday workflow tree (not a standard board).</div>
   <div class="toolbar">
-    ${['all','stale','empty','ok'].map(v=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('boards','${v}',this)">${v==='ok'?'Active':v.charAt(0).toUpperCase()+v.slice(1)} (${v==='all'?S.boards.length:v==='ok'?S.boards.filter(r=>r.rec==='ok').length:S.boards.filter(r=>r.rec===v).length})</button>`).join('')}
+    ${[['all','All',S.boards.length],['stale','Stale',S.boards.filter(r=>r.rec==='stale').length],['empty','Empty',S.boards.filter(r=>r.rec==='empty').length],['ok','Active',S.boards.filter(r=>r.rec==='ok').length],['workflow','Workflows',wfCount]]
+      .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('boards','${v}',this)">${l} (${n})</button>`).join('')}
     <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('boards')">Export CSV</button>
   </div>
   <div class="table-wrap"><table><thead><tr>
-    ${thTag('boards','name','Board',false,'26%')}
-    ${thTag('boards','workspace','Workspace',false,'15%')}
-    ${thTag('boards','items','Items',false,'9%')}
-    ${thTag('boards','subscribers','Subscribers',false,'10%')}
-    ${thTag('boards','days_stale','Last activity',true,'16%')}
-    ${thTag('boards','rec','Status',false,'14%')}
+    ${thTag('boards','name','Board',false,'24%')}
+    ${thTag('boards','workspace','Workspace',false,'14%')}
+    ${thTag('boards','kind','Type',false,'10%')}
+    ${thTag('boards','items','Items',false,'8%')}
+    ${thTag('boards','subscribers','Subscribers',false,'9%')}
+    ${thTag('boards','days_stale','Last activity',true,'14%')}
+    ${thTag('boards','rec','Status',false,'13%')}
   </tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
@@ -506,7 +524,7 @@ function tIntegrations(){
 function csv(headers,rows){return[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');}
 function dl(name,data){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(data);a.download=name;a.click();}
 function exportTab(tab){
-  if(tab==='boards')dl('audit-boards.csv',csv(['Board','Workspace','Items','Subscribers','Last Activity','Status'],S.boards.map(r=>[r.name,r.workspace,r.items,r.subscribers,r.last_activity,r.rec])));
+  if(tab==='boards')dl('audit-boards.csv',csv(['Board','Workspace','Type','Items','Subscribers','Last Activity','Status'],S.boards.map(r=>[r.name,r.workspace,r.kind==='workflows'?'Workflow':r.kind==='sub_items_board'?'Subitems':'Board',r.items,r.subscribers,r.last_activity,r.rec])));
   if(tab==='columns')dl('audit-columns.csv',csv(['Board','Workspace','Column','Type','Fill Rate (%)','Suggestion'],S.columns.map(r=>[r.board,r.workspace,r.title,r.type,Math.round(r.fill),r.fill===0?'Consider deleting':r.fill<20?'Review':'Keep'])));
   if(tab==='groups')dl('audit-groups.csv',csv(['Board','Workspace','Group','Items (sampled)','Status'],S.groups.map(r=>[r.board,r.workspace,r.group,r.items,r.rec])));
   if(tab==='users')dl('audit-users.csv',csv(['Name','Email','Role','Status','Boards','Joined'],S.users.map(r=>[r.name,r.email,r.role,r.status,r.boards_count,r.created_at||''])));
