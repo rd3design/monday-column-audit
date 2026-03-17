@@ -1,0 +1,7 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/api/monday"
+  to = "/.netlify/functions/monday-proxy"
+  status = 200

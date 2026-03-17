@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>monday.com Column Audit</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface2: #f0efea;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a18;
+    --text2: #6b6b66;
+    --text3: #9e9e98;
+    --accent: #6c47ff;
+    --accent-hover: #5938dd;
+    --green-bg: #eaf3de; --green-text: #3b6d11;
+    --amber-bg: #faeeda; --amber-text: #854f0b;
+    --red-bg: #fcebeb; --red-text: #a32d2d;
+    --green-bar: #639922; --amber-bar: #ba7517; --red-bar: #e24b4a;
+    --radius: 8px; --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2b;
+      --border: rgba(255,255,255,0.1); --border-strong: rgba(255,255,255,0.2);
+      --text: #f0efea; --text2: #9e9e98; --text3: #6b6b66;
+      --green-bg: #173404; --green-text: #c0dd97;
+      --amber-bg: #412402; --amber-text: #fac775;
+      --red-bg: #501313; --red-text: #f7c1c1;
+    }
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; }
+  .logo { width: 38px; height: 38px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo svg { width: 20px; height: 20px; fill: white; }
+  .header-text h1 { font-size: 20px; font-weight: 600; }
+  .header-text p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  /* Card */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+
+  /* Status */
+  .status { font-size: 12px; color: var(--text2); margin-top: 10px; min-height: 18px; display: flex; align-items: center; gap: 6px; }
+  .status.err { color: var(--red-text); }
+  .spinner { width: 12px; height: 12px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status.loading .spinner { display: block; }
+
+  /* Progress bar */
+  .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; display: none; }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+  /* Buttons */
+  .btn { padding: 8px 18px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Metrics grid */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  @media (max-width: 640px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+  .metric { background: var(--surface2); border-radius: var(--radius); padding: 0.9rem 1rem; }
+  .metric-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metric-value { font-size: 24px; font-weight: 600; }
+  .metric-value.danger { color: var(--red-bar); }
+
+  /* Toolbar */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-btn { padding: 5px 13px; border-radius: 100px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s; }
+  .filter-btn:hover { background: var(--surface2); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .threshold-group { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
+  .threshold-input { width: 50px; padding: 4px 8px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface2); color: var(--text); font-size: 12px; font-family: inherit; text-align: center; }
+
+  /* Table */
+  .table-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 500; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; user-select: none; white-space: nowrap; }
+  thead th:hover { color: var(--text); }
+  td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface2); }
+
+  .col-board { width: 22%; }
+  .col-col   { width: 20%; }
+  .col-type  { width: 11%; }
+  .col-fill  { width: 9%; }
+  .col-bar   { width: 22%; }
+  .col-rec   { width: 16%; }
+
+  /* Badges */
+  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; background: var(--surface2); color: var(--text2); }
+  .bar-outer { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; }
+  .bar-inner { height: 100%; border-radius: 3px; }
+  .rec { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+  .rec-keep   { background: var(--green-bg); color: var(--green-text); }
+  .rec-review { background: var(--amber-bg); color: var(--amber-text); }
+  .rec-delete { background: var(--red-bg);   color: var(--red-text); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot-keep   { background: var(--green-bar); }
+  .dot-review { background: var(--amber-bar); }
+  .dot-delete { background: var(--red-bar); }
+
+  .sort-icon { opacity: 0.35; font-size: 10px; margin-left: 2px; }
+  .sort-icon.on { opacity: 1; }
+
+  .empty { text-align: center; padding: 3rem; color: var(--text2); font-size: 14px; }
+
+  /* Info banner */
+  .info-banner { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .info-banner strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="3"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>monday.com column audit</h1>
+      <p>Find columns that aren't being used so you can clean up your workspace</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="btn-row">
+      <button class="btn btn-primary" id="runBtn" onclick="runAnalysis()">Scan my workspace</button>
+      <button class="btn" onclick="exportCsv()" id="exportBtn" style="display:none">Export CSV</button>
+    </div>
+    <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="status" id="status"><span class="spinner" id="spinner"></span><span id="statusText">Ready — click "Scan my workspace" to start.</span></div>
+  </div>
+
+  <div class="info-banner" style="margin-bottom:1.25rem">
+    <strong>How it works:</strong> This tool calls the monday.com API through a secure server-side proxy. Your API token is stored as a Netlify environment variable (<code>MONDAY_API_KEY</code>) and never exposed in the browser. Columns like item name, IDs, and auto-number are skipped automatically. Fill rate is calculated from the first 100 items per board.
+  </div>
+
+  <div id="resultsArea" style="display:none">
+    <div class="metrics" id="metricsRow"></div>
+
+    <div class="toolbar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('delete',this)">Empty</button>
+      <button class="filter-btn" onclick="setFilter('review',this)">Low use</button>
+      <button class="filter-btn" onclick="setFilter('keep',this)">Good use</button>
+      <div class="spacer"></div>
+      <div class="threshold-group">
+        Review threshold: <input class="threshold-input" type="number" id="threshold" value="20" min="0" max="100" onchange="renderTable(); updateMetrics()" /> %
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-board" onclick="sortBy('board')">Board <span class="sort-icon" id="si-board"></span></th>
+            <th class="col-col"   onclick="sortBy('title')">Column <span class="sort-icon" id="si-title"></span></th>
+            <th class="col-type"  onclick="sortBy('type')">Type <span class="sort-icon" id="si-type"></span></th>
+            <th class="col-fill"  onclick="sortBy('fill')">Fill <span class="sort-icon on" id="si-fill">▲</span></th>
+            <th class="col-bar"></th>
+            <th class="col-rec"   onclick="sortBy('rec')">Suggestion <span class="sort-icon" id="si-rec"></span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SKIP_TYPES = new Set(['name','pulse-id','item-id','auto-number','subtasks','board-relation','dependency','color']);
+let allData = [];
+let currentFilter = 'all';
+let sortCol = 'fill';
+let sortDir = 1;
+
+function setStatus(msg, state) {
+  const el = document.getElementById('status');
+  el.className = 'status' + (state === 'err' ? ' err' : '') + (state === 'loading' ? ' loading' : '');
+  document.getElementById('statusText').textContent = msg;
+  document.getElementById('spinner').style.display = state === 'loading' ? 'block' : 'none';
+}
+
+function setProgress(pct) {
+  const wrap = document.getElementById('progressWrap');
+  wrap.style.display = pct > 0 && pct < 100 ? 'block' : 'none';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function getRec(fill) {
+  const t = parseInt(document.getElementById('threshold').value) || 20;
+  if (fill === 0) return 'delete';
+  if (fill < t) return 'review';
+  return 'keep';
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function sortBy(col) {
+  sortDir = sortCol === col ? sortDir * -1 : (col === 'fill' ? 1 : -1);
+  sortCol = col;
+  document.querySelectorAll('.sort-icon').forEach(el => { el.textContent = ''; el.className = 'sort-icon'; });
+  const icon = document.getElementById('si-' + col);
+  if (icon) { icon.textContent = sortDir === 1 ? '▲' : '▼'; icon.className = 'sort-icon on'; }
+  renderTable();
+}
+
+function barColor(rec) {
+  return rec === 'keep' ? 'var(--green-bar)' : rec === 'review' ? 'var(--amber-bar)' : 'var(--red-bar)';
+}
+
+function recLabel(rec) {
+  return rec === 'keep' ? 'Keep' : rec === 'review' ? 'Review' : 'Consider deleting';
+}
+
+function renderTable() {
+  let data = allData.map(r => ({ ...r, rec: getRec(r.fill) }));
+  if (currentFilter !== 'all') data = data.filter(r => r.rec === currentFilter);
+
+  data.sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No columns match this filter.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => {
+    const pct = Math.round(r.fill);
+    const c = barColor(r.rec);
+    return `<tr>
+      <td title="${esc(r.board)}">${esc(r.board)}</td>
+      <td title="${esc(r.title)}">${esc(r.title)}</td>
+      <td><span class="type-badge">${esc(r.type)}</span></td>
+      <td style="font-weight:600;color:${c}">${pct}%</td>
+      <td><div class="bar-outer"><div class="bar-inner" style="width:${pct}%;background:${c}"></div></div></td>
+      <td><span class="rec rec-${r.rec}"><span class="dot dot-${r.rec}"></span>${recLabel(r.rec)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateMetrics() {
+  const withRec = allData.map(r => ({ ...r, rec: getRec(r.fill) }));
+  const boards = new Set(allData.map(r => r.board)).size;
+  const toAct  = withRec.filter(r => r.rec !== 'keep').length;
+  const empty  = withRec.filter(r => r.rec === 'delete').length;
+  const avg    = allData.length ? Math.round(allData.reduce((s, r) => s + r.fill, 0) / allData.length) : 0;
+  document.getElementById('metricsRow').innerHTML = `
+    <div class="metric"><div class="metric-label">Boards scanned</div><div class="metric-value">${boards}</div></div>
+    <div class="metric"><div class="metric-label">Columns analyzed</div><div class="metric-value">${allData.length}</div></div>
+    <div class="metric"><div class="metric-label">Avg fill rate</div><div class="metric-value">${avg}%</div></div>
+    <div class="metric"><div class="metric-label">Action needed</div><div class="metric-value danger">${toAct}</div></div>
+  `;
+}
+
+function showResults(data) {
+  allData = data;
+  document.getElementById('resultsArea').style.display = 'block';
+  document.getElementById('exportBtn').style.display = 'inline-block';
+  updateMetrics();
+  renderTable();
+}
+
+async function mondayQuery(query) {
+  const res = await fetch('/api/monday', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0].message);
+  return json.data;
+}
+
+async function runAnalysis() {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  setStatus('Connecting to monday.com…', 'loading');
+  setProgress(5);
+
+  try {
+    const data = await mondayQuery(`{ boards(limit:50, order_by:created_at) { id name items_count columns { id title type } } }`);
+    const boards = data.boards || [];
+    if (!boards.length) { setStatus('No boards found in your workspace.', 'err'); btn.disabled = false; setProgress(0); return; }
+
+    const results = [];
+    for (let i = 0; i < boards.length; i++) {
+      const board = boards[i];
+      setStatus(`Scanning board ${i + 1} of ${boards.length}: ${board.name}…`, 'loading');
+      setProgress(Math.round(5 + (i / boards.length) * 90));
+
+      const cols = board.columns.filter(c => !SKIP_TYPES.has(c.type));
+      if (!cols.length) continue;
+
+      if (!board.items_count) {
+        cols.forEach(c => results.push({ board: board.name, title: c.title, type: c.type, fill: 0 }));
+        continue;
+      }
+
+      try {
+        const colFields = cols.map(c => {
+          const safe = 'c' + c.id.replace(/[^a-zA-Z0-9]/g, '_');
+          return `${safe}: column_values(ids: "${c.id}") { text value }`;
+        }).join(' ');
+
+        const itemData = await mondayQuery(`{ boards(ids: ${board.id}) { items_page(limit: 100) { items { ${colFields} } } } }`);
+        const items = itemData.boards?.[0]?.items_page?.items || [];
+        const total = Math.max(items.length, board.items_count);
+
+        cols.forEach(c => {
+          const key = 'c' + c.id.replace(/[^a-zA-Z0-9]/g, '_');
+          let filled = 0;
+          items.forEach(item => {
+            const cv = item[key];
+            if (Array.isArray(cv) && cv.length) {
+              const v = cv[0];
+              if (v && v.text !== '' && v.text !== null && v.value !== '{}' && v.value !== 'null' && v.value !== null) filled++;
+            }
+          });
+          results.push({ board: board.name, title: c.title, type: c.type, fill: total > 0 ? (filled / total) * 100 : 0 });
+        });
+      } catch {
+        cols.forEach(c => results.push({ board: board.name, title: c.title, type: c.type, fill: 0 }));
+      }
+    }
+
+    setProgress(100);
+    setStatus(`Done — ${boards.length} boards, ${results.length} columns analyzed.`);
+    setTimeout(() => setProgress(0), 600);
+    showResults(results);
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'err');
+    setProgress(0);
+  }
+  btn.disabled = false;
+}
+
+function exportCsv() {
+  const rows = [['Board', 'Column', 'Type', 'Fill Rate (%)', 'Suggestion']];
+  allData.forEach(r => {
+    const rec = getRec(r.fill);
+    rows.push([r.board, r.title, r.type, Math.round(r.fill), recLabel(rec)]);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'monday-column-audit.csv';
+  a.click();
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
