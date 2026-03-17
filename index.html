@@ -255,13 +255,17 @@ async function runAll(){
       }
     }
 
-    S.boards=rawBoards.map(b=>({
-      name:b.name,workspace:b.workspace?.name||'—',items:b.items_count||0,
-      updated_at:b.updated_at,days_stale:daysSince(b.updated_at),last_activity:ago(b.updated_at),
-      subscribers:(b.subscribers||[]).length,state:b.state,
-      kind:b.board_kind||'board',
-      rec:b.items_count===0?'empty':daysSince(b.updated_at)>=staleDays?'stale':'ok'
-    }));
+    S.boards=rawBoards.map(b=>{
+      const subs=(b.subscribers||[]).length;
+      const isLikelyWorkflow=b.board_kind==='workflows'||(b.items_count===5&&subs===1);
+      return {
+        name:b.name,workspace:b.workspace?.name||'—',items:b.items_count||0,
+        updated_at:b.updated_at,days_stale:daysSince(b.updated_at),last_activity:ago(b.updated_at),
+        subscribers:subs,state:b.state,
+        kind:isLikelyWorkflow?'workflow':(b.board_kind||'board'),
+        rec:b.items_count===0?'empty':daysSince(b.updated_at)>=staleDays?'stale':'ok'
+      };
+    });
     S.columns=colResults;S.groups=grpResults;S.integrations=intResults;
 
     setProgress(100);setTimeout(()=>setProgress(0),600);
@@ -349,10 +353,10 @@ function tBoards(){
   if(f==='empty')rows=rows.filter(r=>r.rec==='empty');
   else if(f==='stale')rows=rows.filter(r=>r.rec==='stale');
   else if(f==='ok')rows=rows.filter(r=>r.rec==='ok');
-  else if(f==='workflow')rows=rows.filter(r=>r.kind==='workflows');
+  else if(f==='workflow')rows=rows.filter(r=>r.kind==='workflow');
   rows=sortRows('boards',S.sortCol['boards']||'days_stale',rows);
   const kindBadge=r=>{
-    if(r.kind==='workflows')return'<span class="badge badge-blue">Workflow</span>';
+    if(r.kind==='workflow')return'<span class="badge badge-blue" title="Detected via board_kind or 5-item/1-subscriber pattern">Workflow</span>';
     if(r.kind==='sub_items_board')return'<span class="badge badge-gray">Subitems</span>';
     return'<span class="badge badge-gray">Board</span>';
   };
@@ -369,8 +373,8 @@ function tBoards(){
     <td>${recBadge(r)}</td>
   </tr>`).join('')
     :`<tr class="empty-row"><td colspan="7">No boards match this filter.</td></tr>`;
-  const wfCount=S.boards.filter(r=>r.kind==='workflows').length;
-  return `<div class="note"><strong>Stale</strong> = not updated in ${staleDays}+ days. <strong>Empty</strong> = 0 items. <strong>Workflow</strong> = monday workflow tree (not a standard board).</div>
+  const wfCount=S.boards.filter(r=>r.kind==='workflow').length;
+  return `<div class="note"><strong>Stale</strong> = not updated in ${staleDays}+ days. <strong>Empty</strong> = 0 items. <strong>Workflow</strong> = detected via monday's board type or the 5-item / 1-subscriber pattern typical of workflow template boards — hover the badge to confirm.</div>
   <div class="toolbar">
     ${[['all','All',S.boards.length],['stale','Stale',S.boards.filter(r=>r.rec==='stale').length],['empty','Empty',S.boards.filter(r=>r.rec==='empty').length],['ok','Active',S.boards.filter(r=>r.rec==='ok').length],['workflow','Workflows',wfCount]]
       .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('boards','${v}',this)">${l} (${n})</button>`).join('')}
@@ -524,7 +528,7 @@ function tIntegrations(){
 function csv(headers,rows){return[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');}
 function dl(name,data){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(data);a.download=name;a.click();}
 function exportTab(tab){
-  if(tab==='boards')dl('audit-boards.csv',csv(['Board','Workspace','Type','Items','Subscribers','Last Activity','Status'],S.boards.map(r=>[r.name,r.workspace,r.kind==='workflows'?'Workflow':r.kind==='sub_items_board'?'Subitems':'Board',r.items,r.subscribers,r.last_activity,r.rec])));
+  if(tab==='boards')dl('audit-boards.csv',csv(['Board','Workspace','Type','Items','Subscribers','Last Activity','Status'],S.boards.map(r=>[r.name,r.workspace,r.kind==='workflow'?'Workflow':r.kind==='sub_items_board'?'Subitems':'Board',r.items,r.subscribers,r.last_activity,r.rec])));
   if(tab==='columns')dl('audit-columns.csv',csv(['Board','Workspace','Column','Type','Fill Rate (%)','Suggestion'],S.columns.map(r=>[r.board,r.workspace,r.title,r.type,Math.round(r.fill),r.fill===0?'Consider deleting':r.fill<20?'Review':'Keep'])));
   if(tab==='groups')dl('audit-groups.csv',csv(['Board','Workspace','Group','Items (sampled)','Status'],S.groups.map(r=>[r.board,r.workspace,r.group,r.items,r.rec])));
   if(tab==='users')dl('audit-users.csv',csv(['Name','Email','Role','Status','Boards','Joined'],S.users.map(r=>[r.name,r.email,r.role,r.status,r.boards_count,r.created_at||''])));
