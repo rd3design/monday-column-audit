@@ -3,126 +3,106 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>monday.com Column Audit</title>
+<title>monday.com Workspace Audit</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f5f3; --surface: #ffffff; --surface2: #f0efea;
+  --border: rgba(0,0,0,0.09); --border-md: rgba(0,0,0,0.15); --border-strong: rgba(0,0,0,0.22);
+  --text: #1a1a18; --text2: #6b6b66; --text3: #9e9e98;
+  --accent: #6c47ff; --accent-hover: #5938dd;
+  --green-bg: #eaf3de; --green-text: #3b6d11; --green: #639922;
+  --amber-bg: #faeeda; --amber-text: #854f0b; --amber: #ba7517;
+  --red-bg: #fcebeb; --red-text: #a32d2d; --red: #e24b4a;
+  --blue-bg: #e6f1fb; --blue-text: #185fa5;
+  --radius: 8px; --radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
   :root {
-    --bg: #f5f5f3;
-    --surface: #ffffff;
-    --surface2: #f0efea;
-    --border: rgba(0,0,0,0.1);
-    --border-strong: rgba(0,0,0,0.2);
-    --text: #1a1a18;
-    --text2: #6b6b66;
-    --text3: #9e9e98;
-    --accent: #6c47ff;
-    --accent-hover: #5938dd;
-    --green-bg: #eaf3de; --green-text: #3b6d11;
-    --amber-bg: #faeeda; --amber-text: #854f0b;
-    --red-bg: #fcebeb; --red-text: #a32d2d;
-    --green-bar: #639922; --amber-bar: #ba7517; --red-bar: #e24b4a;
-    --radius: 8px; --radius-lg: 12px;
+    --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2b;
+    --border: rgba(255,255,255,0.08); --border-md: rgba(255,255,255,0.13); --border-strong: rgba(255,255,255,0.2);
+    --text: #f0efea; --text2: #9e9e98; --text3: #6b6b66;
+    --green-bg: #173404; --green-text: #c0dd97;
+    --amber-bg: #412402; --amber-text: #fac775;
+    --red-bg: #501313; --red-text: #f7c1c1;
+    --blue-bg: #042c53; --blue-text: #85b7eb;
   }
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+.page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1a18; --surface: #242422; --surface2: #2e2e2b;
-      --border: rgba(255,255,255,0.1); --border-strong: rgba(255,255,255,0.2);
-      --text: #f0efea; --text2: #9e9e98; --text3: #6b6b66;
-      --green-bg: #173404; --green-text: #c0dd97;
-      --amber-bg: #412402; --amber-text: #fac775;
-      --red-bg: #501313; --red-text: #f7c1c1;
-    }
-  }
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.75rem; }
+.logo { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo svg { width: 22px; height: 22px; fill: white; }
+.header-text h1 { font-size: 21px; font-weight: 600; }
+.header-text p { font-size: 13px; color: var(--text2); margin-top: 2px; }
 
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+.scan-card { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+.scan-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn { padding: 8px 18px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.15s; }
+.btn:hover { background: var(--surface2); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.label-group { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
+.num-input { width: 64px; padding: 6px 8px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface2); color: var(--text); font-size: 13px; font-family: inherit; text-align: center; }
+.progress-wrap { height: 3px; background: var(--border-md); border-radius: 2px; margin-top: 12px; overflow: hidden; display: none; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; width: 0%; }
+.status { font-size: 12px; color: var(--text2); margin-top: 8px; min-height: 18px; display: flex; align-items: center; gap: 6px; }
+.status.err { color: var(--red-text); }
+.spinner { width: 12px; height: 12px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; display: none; }
+.status.loading .spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+@media (max-width: 900px) { .metrics-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+.metric { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem 1rem; }
+.metric-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+.metric-value { font-size: 24px; font-weight: 600; }
+.metric-value.warn { color: var(--amber); }
+.metric-value.danger { color: var(--red); }
 
-  /* Header */
-  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; }
-  .logo { width: 38px; height: 38px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo svg { width: 20px; height: 20px; fill: white; }
-  .header-text h1 { font-size: 20px; font-weight: 600; }
-  .header-text p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.tabs { display: flex; gap: 2px; border-bottom: 0.5px solid var(--border-md); margin-bottom: 1.25rem; overflow-x: auto; }
+.tab { padding: 9px 16px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; border: none; background: none; font-family: inherit; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-badge { display: inline-block; background: var(--red-bg); color: var(--red-text); font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 100px; margin-left: 5px; vertical-align: middle; }
 
-  /* Card */
-  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+.filter-btn { padding: 5px 13px; border-radius: 100px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.12s; }
+.filter-btn:hover { background: var(--surface2); color: var(--text); }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-  /* Status */
-  .status { font-size: 12px; color: var(--text2); margin-top: 10px; min-height: 18px; display: flex; align-items: center; gap: 6px; }
-  .status.err { color: var(--red-text); }
-  .spinner { width: 12px; height: 12px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .status.loading .spinner { display: block; }
+.table-wrap { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { padding: 9px 14px; text-align: left; font-weight: 500; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 0.5px solid var(--border-md); background: var(--surface2); cursor: pointer; user-select: none; white-space: nowrap; }
+thead th:hover { color: var(--text); }
+td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+.sort-icon { opacity: 0.3; font-size: 10px; margin-left: 3px; }
+.sort-icon.on { opacity: 1; }
 
-  /* Progress bar */
-  .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; display: none; }
-  .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+.badge-green { background: var(--green-bg); color: var(--green-text); }
+.badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+.badge-red   { background: var(--red-bg);   color: var(--red-text); }
+.badge-blue  { background: var(--blue-bg);  color: var(--blue-text); }
+.badge-gray  { background: var(--surface2); color: var(--text2); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-amber { background: var(--amber); }
+.dot-red   { background: var(--red); }
 
-  /* Buttons */
-  .btn { padding: 8px 18px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; white-space: nowrap; font-family: inherit; transition: background 0.15s; }
-  .btn:hover { background: var(--surface2); }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.bar-outer { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; min-width: 60px; }
+.bar-inner { height: 100%; border-radius: 3px; }
 
-  /* Metrics grid */
-  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-  @media (max-width: 640px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
-  .metric { background: var(--surface2); border-radius: var(--radius); padding: 0.9rem 1rem; }
-  .metric-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-  .metric-value { font-size: 24px; font-weight: 600; }
-  .metric-value.danger { color: var(--red-bar); }
-
-  /* Toolbar */
-  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
-  .filter-btn { padding: 5px 13px; border-radius: 100px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s; }
-  .filter-btn:hover { background: var(--surface2); color: var(--text); }
-  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .spacer { flex: 1; }
-  .threshold-group { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
-  .threshold-input { width: 50px; padding: 4px 8px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface2); color: var(--text); font-size: 12px; font-family: inherit; text-align: center; }
-
-  /* Table */
-  .table-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th { padding: 10px 14px; text-align: left; font-weight: 500; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 0.5px solid var(--border); background: var(--surface2); cursor: pointer; user-select: none; white-space: nowrap; }
-  thead th:hover { color: var(--text); }
-  td { padding: 9px 14px; border-bottom: 0.5px solid var(--border); vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--surface2); }
-
-  .col-board { width: 22%; }
-  .col-col   { width: 20%; }
-  .col-type  { width: 11%; }
-  .col-fill  { width: 9%; }
-  .col-bar   { width: 22%; }
-  .col-rec   { width: 16%; }
-
-  /* Badges */
-  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; background: var(--surface2); color: var(--text2); }
-  .bar-outer { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; }
-  .bar-inner { height: 100%; border-radius: 3px; }
-  .rec { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; }
-  .rec-keep   { background: var(--green-bg); color: var(--green-text); }
-  .rec-review { background: var(--amber-bg); color: var(--amber-text); }
-  .rec-delete { background: var(--red-bg);   color: var(--red-text); }
-  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-  .dot-keep   { background: var(--green-bar); }
-  .dot-review { background: var(--amber-bar); }
-  .dot-delete { background: var(--red-bar); }
-
-  .sort-icon { opacity: 0.35; font-size: 10px; margin-left: 2px; }
-  .sort-icon.on { opacity: 1; }
-
-  .empty { text-align: center; padding: 3rem; color: var(--text2); font-size: 14px; }
-
-  /* Info banner */
-  .info-banner { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 12px; color: var(--text2); line-height: 1.6; }
-  .info-banner strong { color: var(--text); }
+.empty-row td { text-align: center; padding: 3rem; color: var(--text2); }
+.note { font-size: 12px; color: var(--text2); background: var(--surface2); border-radius: var(--radius); padding: 0.6rem 0.9rem; margin-bottom: 1rem; line-height: 1.6; }
+.note strong { color: var(--text); }
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
@@ -133,254 +113,406 @@
       <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="3"/></svg>
     </div>
     <div class="header-text">
-      <h1>monday.com column audit</h1>
-      <p>Find columns that aren't being used so you can clean up your workspace</p>
+      <h1>monday.com workspace audit</h1>
+      <p>Comprehensive health report — boards, columns, groups, users &amp; integrations</p>
     </div>
   </div>
 
-  <div class="card">
-    <div class="btn-row">
-      <button class="btn btn-primary" id="runBtn" onclick="runAnalysis()">Scan my workspace</button>
-      <button class="btn" onclick="exportCsv()" id="exportBtn" style="display:none">Export CSV</button>
+  <div class="scan-card">
+    <div class="scan-row">
+      <button class="btn btn-primary" id="runBtn" onclick="runAll()">Run full audit</button>
+      <div class="label-group">Items per board: <input class="num-input" type="number" id="itemLimit" value="500" min="50" max="5000" step="50" /></div>
+      <div class="label-group">Stale after: <input class="num-input" type="number" id="staleDays" value="90" min="7" max="730" /> days</div>
+      <button class="btn btn-sm hidden" id="exportBtn" onclick="exportAll()" style="margin-left:auto">Export all CSV</button>
     </div>
     <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="status" id="status"><span class="spinner" id="spinner"></span><span id="statusText">Ready — click "Scan my workspace" to start.</span></div>
+    <div class="status" id="statusEl"><span class="spinner" id="spinner"></span><span id="statusText">Ready — click "Run full audit" to scan your workspace.</span></div>
   </div>
 
-  <div class="info-banner" style="margin-bottom:1.25rem">
-    <strong>How it works:</strong> This tool calls the monday.com API through a secure server-side proxy. Your API token is stored as a Netlify environment variable (<code>MONDAY_API_KEY</code>) and never exposed in the browser. Columns like item name, IDs, and auto-number are skipped automatically. Fill rate is calculated from the first 100 items per board.
-  </div>
-
-  <div id="resultsArea" style="display:none">
-    <div class="metrics" id="metricsRow"></div>
-
-    <div class="toolbar">
-      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-      <button class="filter-btn" onclick="setFilter('delete',this)">Empty</button>
-      <button class="filter-btn" onclick="setFilter('review',this)">Low use</button>
-      <button class="filter-btn" onclick="setFilter('keep',this)">Good use</button>
-      <div class="spacer"></div>
-      <div class="threshold-group">
-        Review threshold: <input class="threshold-input" type="number" id="threshold" value="20" min="0" max="100" onchange="renderTable(); updateMetrics()" /> %
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-board" onclick="sortBy('board')">Board <span class="sort-icon" id="si-board"></span></th>
-            <th class="col-col"   onclick="sortBy('title')">Column <span class="sort-icon" id="si-title"></span></th>
-            <th class="col-type"  onclick="sortBy('type')">Type <span class="sort-icon" id="si-type"></span></th>
-            <th class="col-fill"  onclick="sortBy('fill')">Fill <span class="sort-icon on" id="si-fill">▲</span></th>
-            <th class="col-bar"></th>
-            <th class="col-rec"   onclick="sortBy('rec')">Suggestion <span class="sort-icon" id="si-rec"></span></th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
+  <div id="resultsArea" class="hidden">
+    <div class="metrics-grid" id="metricsRow"></div>
+    <div class="tabs" id="tabRow"></div>
+    <div id="tabContent"></div>
   </div>
 
 </div>
-
 <script>
-const SKIP_TYPES = new Set(['name','pulse-id','item-id','auto-number','subtasks','board-relation','dependency','color']);
-let allData = [];
-let currentFilter = 'all';
-let sortCol = 'fill';
-let sortDir = 1;
+const S = { boards:[], columns:[], groups:[], users:[], integrations:[], sortCol:{}, sortDir:{}, filter:{} };
 
-function setStatus(msg, state) {
-  const el = document.getElementById('status');
-  el.className = 'status' + (state === 'err' ? ' err' : '') + (state === 'loading' ? ' loading' : '');
-  document.getElementById('statusText').textContent = msg;
-  document.getElementById('spinner').style.display = state === 'loading' ? 'block' : 'none';
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function daysSince(d){if(!d)return 9999;return Math.floor((Date.now()-new Date(d).getTime())/86400000);}
+function ago(d){if(!d)return'—';const n=daysSince(d);if(n===0)return'today';if(n===1)return'yesterday';if(n<30)return n+'d ago';if(n<365)return Math.floor(n/30)+'mo ago';return Math.floor(n/365)+'yr ago';}
+
+function setStatus(msg,st){
+  const el=document.getElementById('statusEl');
+  el.className='status'+(st==='err'?' err':st==='loading'?' loading':'');
+  document.getElementById('statusText').textContent=msg;
+  document.getElementById('spinner').style.display=st==='loading'?'block':'none';
+}
+function setProgress(p){
+  const w=document.getElementById('progressWrap');
+  w.style.display=(p>0&&p<100)?'block':'none';
+  document.getElementById('progressBar').style.width=p+'%';
 }
 
-function setProgress(pct) {
-  const wrap = document.getElementById('progressWrap');
-  wrap.style.display = pct > 0 && pct < 100 ? 'block' : 'none';
-  document.getElementById('progressBar').style.width = pct + '%';
+async function mq(query){
+  const r=await fetch('/api/monday',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||'HTTP '+r.status);}
+  const j=await r.json();
+  if(j.errors)throw new Error(j.errors[0].message);
+  return j.data;
 }
 
-function getRec(fill) {
-  const t = parseInt(document.getElementById('threshold').value) || 20;
-  if (fill === 0) return 'delete';
-  if (fill < t) return 'review';
-  return 'keep';
-}
+const SKIP=new Set(['name','pulse-id','item-id','auto-number','subtasks','board-relation','dependency','color']);
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
-
-function sortBy(col) {
-  sortDir = sortCol === col ? sortDir * -1 : (col === 'fill' ? 1 : -1);
-  sortCol = col;
-  document.querySelectorAll('.sort-icon').forEach(el => { el.textContent = ''; el.className = 'sort-icon'; });
-  const icon = document.getElementById('si-' + col);
-  if (icon) { icon.textContent = sortDir === 1 ? '▲' : '▼'; icon.className = 'sort-icon on'; }
-  renderTable();
-}
-
-function barColor(rec) {
-  return rec === 'keep' ? 'var(--green-bar)' : rec === 'review' ? 'var(--amber-bar)' : 'var(--red-bar)';
-}
-
-function recLabel(rec) {
-  return rec === 'keep' ? 'Keep' : rec === 'review' ? 'Review' : 'Consider deleting';
-}
-
-function renderTable() {
-  let data = allData.map(r => ({ ...r, rec: getRec(r.fill) }));
-  if (currentFilter !== 'all') data = data.filter(r => r.rec === currentFilter);
-
-  data.sort((a, b) => {
-    let av = a[sortCol], bv = b[sortCol];
-    if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
-    return av < bv ? sortDir : av > bv ? -sortDir : 0;
-  });
-
-  const tbody = document.getElementById('tableBody');
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">No columns match this filter.</td></tr>';
-    return;
+async function fetchAllItems(boardId,cols,limit){
+  const PAGE=500;
+  const fields=cols.map(c=>`c${c.id.replace(/[^a-zA-Z0-9]/g,'_')}:column_values(ids:"${c.id}"){text value}`).join(' ');
+  let items=[],cursor=null;
+  while(items.length<limit){
+    const n=Math.min(PAGE,limit-items.length);
+    const q=cursor
+      ?`{next_items_page(limit:${n},cursor:"${cursor}"){cursor items{group{id} ${fields}}}}`
+      :`{boards(ids:${boardId}){items_page(limit:${n}){cursor items{group{id} ${fields}}}}}`;
+    const d=await mq(q);
+    const pg=cursor?d.next_items_page:d.boards?.[0]?.items_page;
+    items=items.concat(pg?.items||[]);
+    cursor=pg?.cursor||null;
+    if(!cursor||!pg?.items?.length)break;
   }
-
-  tbody.innerHTML = data.map(r => {
-    const pct = Math.round(r.fill);
-    const c = barColor(r.rec);
-    return `<tr>
-      <td title="${esc(r.board)}">${esc(r.board)}</td>
-      <td title="${esc(r.title)}">${esc(r.title)}</td>
-      <td><span class="type-badge">${esc(r.type)}</span></td>
-      <td style="font-weight:600;color:${c}">${pct}%</td>
-      <td><div class="bar-outer"><div class="bar-inner" style="width:${pct}%;background:${c}"></div></div></td>
-      <td><span class="rec rec-${r.rec}"><span class="dot dot-${r.rec}"></span>${recLabel(r.rec)}</span></td>
-    </tr>`;
-  }).join('');
+  return items;
 }
 
-function updateMetrics() {
-  const withRec = allData.map(r => ({ ...r, rec: getRec(r.fill) }));
-  const boards = new Set(allData.map(r => r.board)).size;
-  const toAct  = withRec.filter(r => r.rec !== 'keep').length;
-  const empty  = withRec.filter(r => r.rec === 'delete').length;
-  const avg    = allData.length ? Math.round(allData.reduce((s, r) => s + r.fill, 0) / allData.length) : 0;
-  document.getElementById('metricsRow').innerHTML = `
-    <div class="metric"><div class="metric-label">Boards scanned</div><div class="metric-value">${boards}</div></div>
-    <div class="metric"><div class="metric-label">Columns analyzed</div><div class="metric-value">${allData.length}</div></div>
-    <div class="metric"><div class="metric-label">Avg fill rate</div><div class="metric-value">${avg}%</div></div>
-    <div class="metric"><div class="metric-label">Action needed</div><div class="metric-value danger">${toAct}</div></div>
-  `;
-}
-
-function showResults(data) {
-  allData = data;
-  document.getElementById('resultsArea').style.display = 'block';
-  document.getElementById('exportBtn').style.display = 'inline-block';
-  updateMetrics();
-  renderTable();
-}
-
-async function mondayQuery(query) {
-  const res = await fetch('/api/monday', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${res.status}`);
-  }
-  const json = await res.json();
-  if (json.errors) throw new Error(json.errors[0].message);
-  return json.data;
-}
-
-async function runAnalysis() {
-  const btn = document.getElementById('runBtn');
-  btn.disabled = true;
-  setStatus('Connecting to monday.com…', 'loading');
-  setProgress(5);
+async function runAll(){
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true;
+  const limit=Math.max(50,Math.min(5000,parseInt(document.getElementById('itemLimit').value)||500));
+  const staleDays=Math.max(7,parseInt(document.getElementById('staleDays').value)||90);
+  setProgress(3);setStatus('Fetching boards and users…','loading');
 
   try {
-    const data = await mondayQuery(`{ boards(limit:50, order_by:created_at) { id name items_count columns { id title type } } }`);
-    const boards = data.boards || [];
-    if (!boards.length) { setStatus('No boards found in your workspace.', 'err'); btn.disabled = false; setProgress(0); return; }
+    const [bd,ud]=await Promise.all([
+      mq(`{boards(limit:100,order_by:created_at,board_kind:public){id name state items_count updated_at workspace{id name} columns{id title type} groups{id title} subscribers{id name}}}`),
+      mq(`{users(limit:200){id name email is_admin is_guest is_pending created_at enabled}}`)
+    ]);
+    const rawBoards=bd.boards||[];
+    const rawUsers=ud.users||[];
+    setProgress(12);
 
-    const results = [];
-    for (let i = 0; i < boards.length; i++) {
-      const board = boards[i];
-      setStatus(`Scanning board ${i + 1} of ${boards.length}: ${board.name}…`, 'loading');
-      setProgress(Math.round(5 + (i / boards.length) * 90));
+    S.users=rawUsers.map(u=>({
+      id:u.id,name:u.name,email:u.email,
+      role:u.is_admin?'Admin':u.is_guest?'Guest':'Member',
+      status:!u.enabled?'Disabled':u.is_pending?'Pending':'Active',
+      created_at:u.created_at,days_since_joined:daysSince(u.created_at),boards_count:0
+    }));
 
-      const cols = board.columns.filter(c => !SKIP_TYPES.has(c.type));
-      if (!cols.length) continue;
+    const colResults=[],grpResults=[],intResults=[];
 
-      if (!board.items_count) {
-        cols.forEach(c => results.push({ board: board.name, title: c.title, type: c.type, fill: 0 }));
+    for(let i=0;i<rawBoards.length;i++){
+      const b=rawBoards[i];
+      setStatus(`Scanning ${i+1}/${rawBoards.length}: ${b.name}…`,'loading');
+      setProgress(Math.round(12+(i/rawBoards.length)*80));
+
+      (b.subscribers||[]).forEach(s=>{const u=S.users.find(u=>u.id===s.id);if(u)u.boards_count++;});
+
+      // integrations
+      try{
+        const id=await mq(`{boards(ids:${b.id}){integrations{id service_name status authorized}}}`);
+        (id.boards?.[0]?.integrations||[]).forEach(ig=>intResults.push({
+          board:b.name,workspace:b.workspace?.name||'—',
+          service:ig.service_name||'Unknown',status:ig.status,authorized:ig.authorized,
+          rec:(!ig.authorized||ig.status==='disabled')?'review':'ok'
+        }));
+      }catch{}
+
+      const cols=(b.columns||[]).filter(c=>!SKIP.has(c.type));
+      if(!cols.length||!b.items_count){
+        cols.forEach(c=>colResults.push({board:b.name,workspace:b.workspace?.name||'—',title:c.title,type:c.type,fill:0,sampled:0,total:b.items_count||0}));
+        // groups all appear empty if no items
+        (b.groups||[]).forEach(g=>grpResults.push({board:b.name,workspace:b.workspace?.name||'—',group:g.title,items:0,rec:'empty'}));
         continue;
       }
 
-      try {
-        const colFields = cols.map(c => {
-          const safe = 'c' + c.id.replace(/[^a-zA-Z0-9]/g, '_');
-          return `${safe}: column_values(ids: "${c.id}") { text value }`;
-        }).join(' ');
+      try{
+        const items=await fetchAllItems(b.id,cols,limit);
+        const sampled=items.length;
+        const gCounts={};
+        items.forEach(item=>{const gid=item.group?.id;if(gid)gCounts[gid]=(gCounts[gid]||0)+1;});
+        (b.groups||[]).forEach(g=>grpResults.push({board:b.name,workspace:b.workspace?.name||'—',group:g.title,items:gCounts[g.id]||0,rec:(gCounts[g.id]||0)===0?'empty':'ok'}));
 
-        const itemData = await mondayQuery(`{ boards(ids: ${board.id}) { items_page(limit: 100) { items { ${colFields} } } } }`);
-        const items = itemData.boards?.[0]?.items_page?.items || [];
-        const total = Math.max(items.length, board.items_count);
-
-        cols.forEach(c => {
-          const key = 'c' + c.id.replace(/[^a-zA-Z0-9]/g, '_');
-          let filled = 0;
-          items.forEach(item => {
-            const cv = item[key];
-            if (Array.isArray(cv) && cv.length) {
-              const v = cv[0];
-              if (v && v.text !== '' && v.text !== null && v.value !== '{}' && v.value !== 'null' && v.value !== null) filled++;
-            }
+        cols.forEach(c=>{
+          const key='c'+c.id.replace(/[^a-zA-Z0-9]/g,'_');
+          let filled=0;
+          items.forEach(item=>{
+            const cv=item[key];
+            if(Array.isArray(cv)&&cv.length){const v=cv[0];if(v&&v.text!==''&&v.text!==null&&v.value!=='{}'&&v.value!=='null'&&v.value!==null)filled++;}
           });
-          results.push({ board: board.name, title: c.title, type: c.type, fill: total > 0 ? (filled / total) * 100 : 0 });
+          colResults.push({board:b.name,workspace:b.workspace?.name||'—',title:c.title,type:c.type,fill:sampled>0?(filled/sampled)*100:0,sampled,total:b.items_count});
         });
-      } catch {
-        cols.forEach(c => results.push({ board: board.name, title: c.title, type: c.type, fill: 0 }));
+      }catch{
+        cols.forEach(c=>colResults.push({board:b.name,workspace:b.workspace?.name||'—',title:c.title,type:c.type,fill:0,sampled:0,total:b.items_count}));
+        (b.groups||[]).forEach(g=>grpResults.push({board:b.name,workspace:b.workspace?.name||'—',group:g.title,items:0,rec:'unknown'}));
       }
     }
 
-    setProgress(100);
-    setStatus(`Done — ${boards.length} boards, ${results.length} columns analyzed.`);
-    setTimeout(() => setProgress(0), 600);
-    showResults(results);
-  } catch (err) {
-    setStatus('Error: ' + err.message, 'err');
-    setProgress(0);
-  }
-  btn.disabled = false;
+    S.boards=rawBoards.map(b=>({
+      name:b.name,workspace:b.workspace?.name||'—',items:b.items_count||0,
+      updated_at:b.updated_at,days_stale:daysSince(b.updated_at),last_activity:ago(b.updated_at),
+      subscribers:(b.subscribers||[]).length,state:b.state,
+      rec:b.items_count===0?'empty':daysSince(b.updated_at)>=staleDays?'stale':'ok'
+    }));
+    S.columns=colResults;S.groups=grpResults;S.integrations=intResults;
+
+    setProgress(100);setTimeout(()=>setProgress(0),600);
+    setStatus(`Audit complete — ${rawBoards.length} boards, ${colResults.length} columns, ${rawUsers.length} users.`);
+    document.getElementById('exportBtn').classList.remove('hidden');
+    renderDashboard();
+  }catch(err){setStatus('Error: '+err.message,'err');setProgress(0);}
+  btn.disabled=false;
 }
 
-function exportCsv() {
-  const rows = [['Board', 'Column', 'Type', 'Fill Rate (%)', 'Suggestion']];
-  allData.forEach(r => {
-    const rec = getRec(r.fill);
-    rows.push([r.board, r.title, r.type, Math.round(r.fill), recLabel(rec)]);
-  });
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'monday-column-audit.csv';
-  a.click();
+function renderDashboard(){
+  const T=20;
+  const bi=S.boards.filter(r=>r.rec!=='ok').length;
+  const ci=S.columns.filter(r=>r.fill<T).length;
+  const gi=S.groups.filter(r=>r.rec==='empty').length;
+  const ui=S.users.filter(r=>r.status!=='Active').length;
+  const ii=S.integrations.filter(r=>r.rec==='review').length;
+
+  document.getElementById('metricsRow').innerHTML=[
+    {l:'Boards',v:S.boards.length,c:''},
+    {l:'Columns',v:S.columns.length,c:''},
+    {l:'Users',v:S.users.length,c:''},
+    {l:'Board issues',v:bi,c:bi>0?'warn':''},
+    {l:'Col. to review',v:ci,c:ci>0?'warn':''},
+    {l:'User issues',v:ui,c:ui>0?'warn':''},
+  ].map(m=>`<div class="metric"><div class="metric-label">${m.l}</div><div class="metric-value ${m.c}">${m.v}</div></div>`).join('');
+
+  const tabs=[
+    {id:'boards',label:'Boards',n:bi},
+    {id:'columns',label:'Columns',n:ci},
+    {id:'groups',label:'Groups',n:gi},
+    {id:'users',label:'Users',n:ui},
+    {id:'integrations',label:'Integrations',n:ii},
+  ];
+  document.getElementById('tabRow').innerHTML=tabs.map((t,i)=>`<button class="tab${i===0?' active':''}" onclick="switchTab('${t.id}',this)">${t.label}${t.n>0?`<span class="tab-badge">${t.n}</span>`:''}</button>`).join('');
+  document.getElementById('resultsArea').classList.remove('hidden');
+  switchTab('boards',document.querySelector('.tab'));
 }
 
-function esc(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const renders={boards:tBoards,columns:tColumns,groups:tGroups,users:tUsers,integrations:tIntegrations};
+  document.getElementById('tabContent').innerHTML=(renders[id]||tBoards)();
 }
+
+function sortRows(tab,col,rows){
+  if(S.sortCol[tab]===col)S.sortDir[tab]=(S.sortDir[tab]||1)*-1;
+  else{S.sortCol[tab]=col;S.sortDir[tab]=['fill','days_stale','items','boards_count','days_since_joined'].includes(col)?1:-1;}
+  const dir=S.sortDir[tab];
+  return[...rows].sort((a,b)=>{let av=a[col]??9999,bv=b[col]??9999;if(typeof av==='string'){av=av.toLowerCase();bv=bv.toLowerCase();}return av<bv?dir:av>bv?-dir:0;});
+}
+function sicons(tab,col){
+  document.querySelectorAll(`[data-st="${tab}"]`).forEach(e=>{e.textContent='';e.className='sort-icon';});
+  const e=document.querySelector(`[data-st="${tab}"][data-sc="${col}"]`);
+  if(e){e.textContent=(S.sortDir[tab]||1)===1?'▲':'▼';e.className='sort-icon on';}
+}
+function clickSort(tab,col){sortRows(tab,col,[]);sicons(tab,col);refreshTab(tab);}
+function setFilter(tab,val,btn){
+  S.filter[tab]=val;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshTab(tab);
+}
+function refreshTab(tab){
+  const active=document.querySelector('.tab.active');
+  const cur=active?active.textContent.trim().toLowerCase():'';
+  const map={boards:'boards',columns:'columns',groups:'groups',users:'users',integrations:'integrations'};
+  for(const[k,v]of Object.entries(map)){if(cur.startsWith(k)&&tab===v){const renders={boards:tBoards,columns:tColumns,groups:tGroups,users:tUsers,integrations:tIntegrations};document.getElementById('tabContent').innerHTML=renders[v]();return;}}
+}
+
+function thTag(tab,col,label,defSort,width){
+  const isActive=S.sortCol[tab]===col;
+  const icon=isActive?`<span class="sort-icon on" data-st="${tab}" data-sc="${col}">${(S.sortDir[tab]||1)===1?'▲':'▼'}</span>`:`<span class="sort-icon" data-st="${tab}" data-sc="${col}"></span>`;
+  const isDefault=!S.sortCol[tab]&&defSort;
+  const defIcon=isDefault?`<span class="sort-icon on" data-st="${tab}" data-sc="${col}">▲</span>`:`<span class="sort-icon" data-st="${tab}" data-sc="${col}"></span>`;
+  return `<th style="width:${width}" onclick="clickSort('${tab}','${col}')">${label} ${isActive?icon:defIcon}</th>`;
+}
+
+// ── Boards ────────────────────────────────────────────────────────────────────
+function tBoards(){
+  const staleDays=parseInt(document.getElementById('staleDays').value)||90;
+  const f=S.filter['boards']||'all';
+  let rows=S.boards;
+  if(f==='empty')rows=rows.filter(r=>r.rec==='empty');
+  else if(f==='stale')rows=rows.filter(r=>r.rec==='stale');
+  else if(f==='ok')rows=rows.filter(r=>r.rec==='ok');
+  rows=sortRows('boards',S.sortCol['boards']||'days_stale',rows);
+  const badge=r=>r.rec==='empty'?'<span class="badge badge-red"><span class="dot dot-red"></span>Empty</span>'
+    :r.rec==='stale'?`<span class="badge badge-amber"><span class="dot dot-amber"></span>Stale</span>`
+    :'<span class="badge badge-green"><span class="dot dot-green"></span>Active</span>';
+  const body=rows.length?rows.map(r=>`<tr><td title="${esc(r.name)}">${esc(r.name)}</td><td>${esc(r.workspace)}</td><td>${r.items.toLocaleString()}</td><td>${r.subscribers}</td><td>${r.last_activity}</td><td>${badge(r)}</td></tr>`).join('')
+    :`<tr class="empty-row"><td colspan="6">No boards match this filter.</td></tr>`;
+  return `<div class="note"><strong>Stale</strong> = not updated in ${staleDays}+ days. <strong>Empty</strong> = 0 items.</div>
+  <div class="toolbar">
+    ${['all','stale','empty','ok'].map(v=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('boards','${v}',this)">${v==='ok'?'Active':v.charAt(0).toUpperCase()+v.slice(1)} (${v==='all'?S.boards.length:v==='ok'?S.boards.filter(r=>r.rec==='ok').length:S.boards.filter(r=>r.rec===v).length})</button>`).join('')}
+    <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('boards')">Export CSV</button>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${thTag('boards','name','Board',false,'26%')}
+    ${thTag('boards','workspace','Workspace',false,'15%')}
+    ${thTag('boards','items','Items',false,'9%')}
+    ${thTag('boards','subscribers','Subscribers',false,'10%')}
+    ${thTag('boards','days_stale','Last activity',true,'16%')}
+    ${thTag('boards','rec','Status',false,'14%')}
+  </tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ── Columns ───────────────────────────────────────────────────────────────────
+function tColumns(){
+  const T=20;
+  const f=S.filter['columns']||'all';
+  let rows=S.columns;
+  if(f==='delete')rows=rows.filter(r=>r.fill===0);
+  else if(f==='review')rows=rows.filter(r=>r.fill>0&&r.fill<T);
+  else if(f==='keep')rows=rows.filter(r=>r.fill>=T);
+  rows=sortRows('columns',S.sortCol['columns']||'fill',rows);
+  const bc=f=>f===0?'var(--red)':f<T?'var(--amber)':'var(--green)';
+  const recBadge=r=>r.fill===0?'<span class="badge badge-red"><span class="dot dot-red"></span>Consider deleting</span>'
+    :r.fill<T?'<span class="badge badge-amber"><span class="dot dot-amber"></span>Review</span>'
+    :'<span class="badge badge-green"><span class="dot dot-green"></span>Keep</span>';
+  const body=rows.length?rows.map(r=>{const p=Math.round(r.fill);return`<tr>
+    <td title="${esc(r.board)}">${esc(r.board)}</td><td>${esc(r.workspace)}</td>
+    <td title="${esc(r.title)}">${esc(r.title)}</td>
+    <td><span class="badge badge-gray">${esc(r.type)}</span></td>
+    <td style="font-weight:600;color:${bc(r.fill)}">${p}%</td>
+    <td><div class="bar-outer"><div class="bar-inner" style="width:${p}%;background:${bc(r.fill)}"></div></div></td>
+    <td>${recBadge(r)}</td>
+  </tr>`;}).join(''):
+  `<tr class="empty-row"><td colspan="7">No columns match this filter.</td></tr>`;
+  return `<div class="note">Fill rate = % of sampled items with a non-empty value. Sampled up to <strong>${parseInt(document.getElementById('itemLimit').value)||500} items</strong> per board.</div>
+  <div class="toolbar">
+    ${[['all','All',S.columns.length],['delete','Empty',S.columns.filter(r=>r.fill===0).length],['review',`Low use <${T}%`,S.columns.filter(r=>r.fill>0&&r.fill<T).length],['keep','Good use',S.columns.filter(r=>r.fill>=T).length]]
+      .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('columns','${v}',this)">${l} (${n})</button>`).join('')}
+    <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('columns')">Export CSV</button>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${thTag('columns','board','Board',false,'20%')}
+    ${thTag('columns','workspace','Workspace',false,'13%')}
+    ${thTag('columns','title','Column',false,'17%')}
+    ${thTag('columns','type','Type',false,'9%')}
+    ${thTag('columns','fill','Fill',true,'7%')}
+    <th style="width:13%"></th>
+    ${thTag('columns','rec','Suggestion',false,'15%')}
+  </tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ── Groups ────────────────────────────────────────────────────────────────────
+function tGroups(){
+  const f=S.filter['groups']||'all';
+  let rows=S.groups;
+  if(f==='empty')rows=rows.filter(r=>r.rec==='empty');
+  else if(f==='ok')rows=rows.filter(r=>r.rec==='ok');
+  rows=sortRows('groups',S.sortCol['groups']||'items',rows);
+  const body=rows.length?rows.map(r=>`<tr>
+    <td title="${esc(r.board)}">${esc(r.board)}</td><td>${esc(r.workspace)}</td>
+    <td title="${esc(r.group)}">${esc(r.group)}</td><td>${r.items}</td>
+    <td>${r.rec==='empty'?'<span class="badge badge-red"><span class="dot dot-red"></span>Empty</span>'
+      :'<span class="badge badge-green"><span class="dot dot-green"></span>Has items</span>'}</td>
+  </tr>`).join(''):`<tr class="empty-row"><td colspan="5">No groups match this filter.</td></tr>`;
+  return `<div class="note">Groups are counted from sampled items only. Groups may appear empty due to item limit — increase the limit for more accurate results on large boards.</div>
+  <div class="toolbar">
+    ${[['all','All',S.groups.length],['empty','Empty',S.groups.filter(r=>r.rec==='empty').length],['ok','Has items',S.groups.filter(r=>r.rec==='ok').length]]
+      .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('groups','${v}',this)">${l} (${n})</button>`).join('')}
+    <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('groups')">Export CSV</button>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${thTag('groups','board','Board',false,'28%')}
+    ${thTag('groups','workspace','Workspace',false,'18%')}
+    ${thTag('groups','group','Group',false,'26%')}
+    ${thTag('groups','items','Items (sampled)',true,'12%')}
+    ${thTag('groups','rec','Status',false,'16%')}
+  </tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+function tUsers(){
+  const f=S.filter['users']||'all';
+  let rows=S.users;
+  if(f==='pending')rows=rows.filter(r=>r.status==='Pending');
+  else if(f==='disabled')rows=rows.filter(r=>r.status==='Disabled');
+  else if(f==='guest')rows=rows.filter(r=>r.role==='Guest');
+  else if(f==='no-boards')rows=rows.filter(r=>r.boards_count===0);
+  rows=sortRows('users',S.sortCol['users']||'boards_count',rows);
+  const sBadge=u=>u.status==='Disabled'?'<span class="badge badge-red">Disabled</span>'
+    :u.status==='Pending'?'<span class="badge badge-amber">Pending invite</span>'
+    :'<span class="badge badge-green">Active</span>';
+  const rBadge=r=>r==='Admin'?'<span class="badge badge-blue">Admin</span>'
+    :r==='Guest'?'<span class="badge badge-amber">Guest</span>'
+    :'<span class="badge badge-gray">Member</span>';
+  const body=rows.length?rows.map(r=>`<tr>
+    <td title="${esc(r.name)}">${esc(r.name)}</td>
+    <td style="color:var(--text2)" title="${esc(r.email)}">${esc(r.email)}</td>
+    <td>${rBadge(r.role)}</td><td>${sBadge(r)}</td>
+    <td>${r.boards_count}</td><td>${ago(r.created_at)}</td>
+  </tr>`).join(''):`<tr class="empty-row"><td colspan="6">No users match this filter.</td></tr>`;
+  return `<div class="note"><strong>Pending</strong> = invite sent, not accepted. <strong>No boards</strong> = not subscribed to any visible board. <strong>Disabled</strong> = account deactivated but still in the system.</div>
+  <div class="toolbar">
+    ${[['all','All',S.users.length],['pending','Pending',S.users.filter(u=>u.status==='Pending').length],['disabled','Disabled',S.users.filter(u=>u.status==='Disabled').length],['guest','Guests',S.users.filter(u=>u.role==='Guest').length],['no-boards','No boards',S.users.filter(u=>u.boards_count===0).length]]
+      .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('users','${v}',this)">${l} (${n})</button>`).join('')}
+    <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('users')">Export CSV</button>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${thTag('users','name','Name',false,'20%')}
+    ${thTag('users','email','Email',false,'24%')}
+    ${thTag('users','role','Role',false,'10%')}
+    ${thTag('users','status','Status',false,'14%')}
+    ${thTag('users','boards_count','Boards',true,'10%')}
+    ${thTag('users','days_since_joined','Joined',false,'12%')}
+  </tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ── Integrations ──────────────────────────────────────────────────────────────
+function tIntegrations(){
+  const f=S.filter['integrations']||'all';
+  let rows=S.integrations;
+  if(f==='review')rows=rows.filter(r=>r.rec==='review');
+  else if(f==='ok')rows=rows.filter(r=>r.rec==='ok');
+  rows=sortRows('integrations',S.sortCol['integrations']||'rec',rows);
+  const body=rows.length?rows.map(r=>`<tr>
+    <td title="${esc(r.board)}">${esc(r.board)}</td><td>${esc(r.workspace)}</td>
+    <td>${esc(r.service)}</td>
+    <td>${r.authorized?'<span class="badge badge-green">Authorized</span>':'<span class="badge badge-red">Unauthorized</span>'}</td>
+    <td>${r.rec==='review'?'<span class="badge badge-amber"><span class="dot dot-amber"></span>Review</span>':'<span class="badge badge-green"><span class="dot dot-green"></span>OK</span>'}</td>
+  </tr>`).join('')
+  :`<tr class="empty-row"><td colspan="5">${S.integrations.length===0?'No integrations found. Either no 3rd-party integrations are installed, or the API did not return them.':'No integrations match this filter.'}</td></tr>`;
+  return `<div class="note">Shows 3rd-party integrations (Slack, Jira, etc.) on each board. <strong>Unauthorized</strong> = connection revoked or expired. monday.com does not expose automation details via the public API.</div>
+  <div class="toolbar">
+    ${[['all','All',S.integrations.length],['review','Needs review',S.integrations.filter(r=>r.rec==='review').length],['ok','OK',S.integrations.filter(r=>r.rec==='ok').length]]
+      .map(([v,l,n])=>`<button class="filter-btn${f===v?' active':''}" onclick="setFilter('integrations','${v}',this)">${l} (${n})</button>`).join('')}
+    <button class="btn btn-sm" style="margin-left:auto" onclick="exportTab('integrations')">Export CSV</button>
+  </div>
+  <div class="table-wrap"><table><thead><tr>
+    ${thTag('integrations','board','Board',false,'28%')}
+    ${thTag('integrations','workspace','Workspace',false,'18%')}
+    ${thTag('integrations','service','Service',false,'20%')}
+    ${thTag('integrations','authorized','Auth status',false,'16%')}
+    ${thTag('integrations','rec','Suggestion',true,'16%')}
+  </tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+function csv(headers,rows){return[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');}
+function dl(name,data){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(data);a.download=name;a.click();}
+function exportTab(tab){
+  if(tab==='boards')dl('audit-boards.csv',csv(['Board','Workspace','Items','Subscribers','Last Activity','Status'],S.boards.map(r=>[r.name,r.workspace,r.items,r.subscribers,r.last_activity,r.rec])));
+  if(tab==='columns')dl('audit-columns.csv',csv(['Board','Workspace','Column','Type','Fill Rate (%)','Suggestion'],S.columns.map(r=>[r.board,r.workspace,r.title,r.type,Math.round(r.fill),r.fill===0?'Consider deleting':r.fill<20?'Review':'Keep'])));
+  if(tab==='groups')dl('audit-groups.csv',csv(['Board','Workspace','Group','Items (sampled)','Status'],S.groups.map(r=>[r.board,r.workspace,r.group,r.items,r.rec])));
+  if(tab==='users')dl('audit-users.csv',csv(['Name','Email','Role','Status','Boards','Joined'],S.users.map(r=>[r.name,r.email,r.role,r.status,r.boards_count,r.created_at||''])));
+  if(tab==='integrations')dl('audit-integrations.csv',csv(['Board','Workspace','Service','Authorized','Suggestion'],S.integrations.map(r=>[r.board,r.workspace,r.service,r.authorized?'Yes':'No',r.rec])));
+}
+function exportAll(){['boards','columns','groups','users','integrations'].forEach(t=>exportTab(t));}
 </script>
 </body>
 </html>
